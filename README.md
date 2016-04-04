@@ -11,7 +11,7 @@ dependencies {
 # Description
 The android open source project is a pulley selector, it can better help you implement event selection effect.Below is a rendering:
 
-![image](https://github.com/idisfkj/idisfkj.picker/raw/master/image/pickerView.gif)
+![image](https://github.com/idisfkj/idisfkj.picker/raw/master/image/PickerView.gif)
 
 ## MyPicker
 You can instantiate the class to use the controls
