@@ -1,4 +1,14 @@
-package com.idisfkj.picker.view;
+/*
+ * Copyright (c) 2016. The Android Open Source Project
+ * Created by idisfkj
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.idisfkj.mypicker;
 
 import android.content.Context;
 import android.graphics.Canvas;
@@ -9,41 +19,32 @@ import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 
-import com.idisfkj.picker.R;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 /**
- * Created by idisfkj on 16/3/9.
+ * Created by idisfkj on 16/4/3.
  * Email : idisfkj@qq.com.
  */
-public class PickerView extends View {
+public class PickerView<T extends Object> extends View{
     private Paint mPaint;
-    private List<String> dataList;
+    private List<T> dataList;
     private Timer mTimer;
     private int screenWidth;
     private int screenHeight;
     private int maxTextSize = 80;
     private int minTextSize = 40;
     private boolean isReady = false;
-    /**
-     * 滑动距离
-     */
+
     private float moveLength = 0;
     private int maxAlpha = 255;
     private int minAlpha = 120;
     private int position = -1;
-    /**
-     * 字体间的间距
-     */
+
     private static final float MARGIN = 3.0f;
-    /**
-     * 速度
-     */
-    private static final float SPEED = 2.0f;
+
     private float eventY;
     private MyTimeTask myTimeTask;
     private OnSelectorListener mListener;
@@ -63,25 +64,21 @@ public class PickerView extends View {
         mPaint.setColor(getResources().getColor(R.color.paintColor));
         mPaint.setTextAlign(Paint.Align.CENTER);
         mPaint.setStyle(Paint.Style.FILL);
-        dataList = new ArrayList<String>();
+        dataList = new ArrayList<>();
         mTimer = new Timer();
     }
 
     /**
-     * 设置居中显示的文本
-     * @param position dataList中的位置
+     * set the default centered text
+     * @param position position in the data
      */
     public void setSelected(int position) {
         this.position = position;
     }
 
-    /**
-     * 添加数据
-     * @param list
-     */
-    public void setData(List<String> list) {
+    public void setData(List<T> list) {
         dataList = list;
-        //如果没有自定义居中显示的文本，则默认显示中间的文本
+        // if not set the default centered text,show the default centered text in the data
         if (position == -1) {
             position = dataList.size() / 2;
         }
@@ -106,41 +103,25 @@ public class PickerView extends View {
             onDrawView(canvas);
     }
 
-    /**
-     * 绘图
-     * @param canvas
-     */
     private void onDrawView(Canvas canvas) {
         float scal = getParabola((screenHeight / 4.0f), moveLength);
-        //字体居中显示
         float x = screenWidth / 2.0f;
         float y = screenHeight / 2.0f + moveLength;
         float size = (maxTextSize - minTextSize) * scal + minTextSize;
-        //获得Paint的属性参数
         Paint.FontMetricsInt pfm = mPaint.getFontMetricsInt();
-        //得到居中y
         float baseLine = y - (pfm.top + pfm.bottom) / 2;
         mPaint.setTextSize(size);
         mPaint.setAlpha((int) ((maxAlpha - minAlpha) * scal + minAlpha));
-        //画中间位置
-        canvas.drawText(dataList.get(position), x, baseLine, mPaint);
+        canvas.drawText(String.valueOf(dataList.get(position)), x, baseLine, mPaint);
 
-        //画上面位置
         for (int i = 1; position - i >= 0; i++) {
             drawOtherView(canvas, i, -1);
         }
-        //画下面的位置
         for (int i = 1; position + i < dataList.size(); i++) {
             drawOtherView(canvas, i, 1);
         }
     }
 
-    /**
-     * 绘上／下文本
-     * @param canvas
-     * @param i 距中间文本的个数
-     * @param direction 方向 1代表下 -1代表上
-     */
     private void drawOtherView(Canvas canvas, int i, int direction) {
         float offsetY = (MARGIN * minTextSize * i + moveLength * direction);
         float scal = getParabola(screenHeight / 4.0f, offsetY);
@@ -152,13 +133,13 @@ public class PickerView extends View {
         float baseLine = (float) (y - (pfm.top + pfm.bottom) / 2.0);
         mPaint.setTextSize(size);
         mPaint.setAlpha((int) alpha);
-        canvas.drawText(dataList.get(position + direction * i), x, baseLine, mPaint);
+        canvas.drawText(String.valueOf(dataList.get(position + direction * i)), x, baseLine, mPaint);
     }
 
     /**
-     * 抛物线
-     * @param zero 圆点坐标
-     * @param offsetY 偏移量
+     * parabola
+     * @param zero
+     * @param offsetY
      * @return y = x^2
      */
     private float getParabola(float zero, float offsetY) {
@@ -193,11 +174,9 @@ public class PickerView extends View {
     private void doMove(MotionEvent event) {
         moveLength += event.getY() - eventY;
         if (moveLength > MARGIN * minTextSize / 2) {
-            //手指向下滑动滑出边界
             moveFootTOHead();
             moveLength = moveLength - MARGIN * minTextSize;
         } else if (moveLength < -MARGIN * minTextSize / 2) {
-            //手指向上滑动滑出边界
             moveHeadToFoot();
             moveLength = moveLength + MARGIN * minTextSize;
         }
@@ -207,13 +186,13 @@ public class PickerView extends View {
 
 
     private void moveHeadToFoot() {
-        String head = dataList.get(0);
+        T head = dataList.get(0);
         dataList.remove(0);
         dataList.add(head);
     }
 
     private void moveFootTOHead() {
-        String foot = dataList.get(dataList.size() - 1);
+        T foot = dataList.get(dataList.size() - 1);
         dataList.remove(dataList.get(dataList.size() - 1));
         dataList.add(0, foot);
     }
@@ -228,7 +207,7 @@ public class PickerView extends View {
             myTimeTask = null;
         }
         myTimeTask = new MyTimeTask(mHandler);
-        mTimer.schedule(myTimeTask, 0, 10);
+        mTimer.schedule(myTimeTask, 0, 100);
     }
 
     public class MyTimeTask extends TimerTask {
@@ -247,25 +226,28 @@ public class PickerView extends View {
     Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
-            if (Math.abs(moveLength) < SPEED) {
+            if (Math.abs(moveLength) < MARGIN * minTextSize / 2) {
                 moveLength = 0;
                 if (myTimeTask != null) {
                     myTimeTask.cancel();
                     myTimeTask = null;
                     completeSelector();
                 }
-            } else
-                moveLength = moveLength - moveLength / Math.abs(moveLength) * SPEED;
+            } else {
+                if (moveLength < 0) {
+                    moveHeadToFoot();
+                } else {
+                    moveFootTOHead();
+                }
+                moveLength = moveLength - moveLength / Math.abs(moveLength) * MARGIN * minTextSize / 2;
+            }
             invalidate();
         }
     };
 
-    /**
-     * 完成选择
-     */
     private void completeSelector() {
         if (mListener != null)
-            mListener.onSelector(dataList.get(position));
+            mListener.onSelector(String.valueOf(dataList.get(position)));
     }
 
     public void setOnSelectorListener(OnSelectorListener listener) {

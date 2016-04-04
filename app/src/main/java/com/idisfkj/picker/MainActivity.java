@@ -3,11 +3,10 @@ package com.idisfkj.picker;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Gravity;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
-import com.idisfkj.picker.view.TextPicker;
+import com.idisfkj.mypicker.MyPicker;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,9 +25,7 @@ public class MainActivity extends AppCompatActivity {
     private List<String> middleList;
     private List<String> rightList;
 
-    private Button ok;
-
-    private TextPicker tp;
+    private MyPicker tp;
 
     private String leftText;
     private String middleText;
@@ -42,9 +39,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void initData() {
-        leftList = new ArrayList<String>();
-        middleList = new ArrayList<String>();
-        rightList = new ArrayList<String>();
+        leftList = new ArrayList<>();
+        middleList = new ArrayList<>();
+        rightList = new ArrayList<>();
         for (int i = 10; i <= 16; i++) {
             leftList.add("20" + i + "年");
         }
@@ -58,33 +55,36 @@ public class MainActivity extends AppCompatActivity {
 
     @OnClick(R.id.bt)
     public void onClick() {
-        tp = new TextPicker(this);
-        //初始化数据
+        tp = new MyPicker(this);
+        //init data
         initData();
-        //加载数据
+        //loding data
         tp.setData(leftList, 1);
         tp.setData(middleList, 2);
         tp.setData(rightList, 3);
-        //设置标题
-        tp.setPickerTitle("标题");
-        //设置默认居中文本
+        //set title
+        tp.setPickerTitle(getResources().getString(R.string.title_name));
+        //set the default centered text
+        //if not set,show centered text in the data
         tp.setMiddleText(5, 1);
         tp.setMiddleText(2, 2);
         tp.setMiddleText(25, 3);
-        //准备完毕
+        //redy
         tp.setPrepare();
-        ok = tp.getOK();
-        ok.setOnClickListener(new View.OnClickListener() {
+
+        // default show three
+//        tp.setShowNum(3);
+
+        tp.setSelectedFinishListener(new MyPicker.SelectedFinishListener() {
             @Override
-            public void onClick(View v) {
-                leftText = tp.getText(1);
-                middleText = tp.getText(2);
-                rightText = tp.getText(3);
+            public void onFinish() {
+                leftText = String.valueOf(tp.getText(1));
+                middleText = String.valueOf(tp.getText(2));
+                rightText = String.valueOf(tp.getText(3));
                 tv.setText(leftText+"-"+middleText+"-"+rightText);
                 tp.dismiss();
             }
         });
-        //展示
         tp.showAtLocation(this.findViewById(R.id.main), Gravity.CENTER, 0, 0);
     }
 }

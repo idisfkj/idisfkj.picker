@@ -1,4 +1,14 @@
-package com.idisfkj.picker.view;
+/*
+ * Copyright (c) 2016. The Android Open Source Project
+ * Created by idisfkj
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package com.idisfkj.mypicker;
 
 import android.content.Context;
 import android.graphics.drawable.ColorDrawable;
@@ -9,17 +19,14 @@ import android.widget.Button;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 
-import com.idisfkj.picker.R;
-
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by idisfkj on 16/3/12.
+ * Created by idisfkj on 16/4/3.
  * Email : idisfkj@qq.com.
  */
-public class TextPicker extends PopupWindow implements View.OnClickListener {
-
+public class MyPicker<T extends Object> extends PopupWindow implements View.OnClickListener {
     private TextView pickerTitle;
     private Button back;
     private Button OK;
@@ -27,20 +34,20 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
     private PickerView pickerView2;
     private PickerView pickerView3;
 
-    private String leftText;
-    private String middleText;
-    private String rightText;
-    private List<String> leftList;
-    private List<String> middleList;
-    private List<String> rightList;
+    private T leftText;
+    private T middleText;
+    private T rightText;
+    private List<T> leftList;
+    private List<T> middleList;
+    private List<T> rightList;
     private int selectedPosition1 = -1;
     private int selectedPosition2 = -1;
     private int selectedPosition3 = -1;
+    private SelectedFinishListener mListener;
 
 
-    public TextPicker(Context context) {
+    public MyPicker(Context context) {
         init(context);
-        back.setOnClickListener(this);
     }
 
     @Override
@@ -49,35 +56,37 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
     }
 
     private void init(Context context) {
-        View view = LayoutInflater.from(context).inflate(R.layout.picker, null);
+        View view  = LayoutInflater.from(context).inflate(R.layout.my_picker,null);
         pickerView1 = (PickerView) view.findViewById(R.id.picker_view1);
         pickerView2 = (PickerView) view.findViewById(R.id.picker_view2);
         pickerView3 = (PickerView) view.findViewById(R.id.picker_view3);
         pickerTitle = (TextView) view.findViewById(R.id.picker_title);
         OK = (Button) view.findViewById(R.id.OK);
         back = (Button) view.findViewById(R.id.back);
+        OK.setOnClickListener(this);
+        back.setOnClickListener(this);
 
         pickerView1.setOnSelectorListener(new PickerView.OnSelectorListener() {
             @Override
             public void onSelector(String text) {
-                leftText = text;
+                leftText = (T) text;
             }
         });
         pickerView2.setOnSelectorListener(new PickerView.OnSelectorListener() {
             @Override
             public void onSelector(String text) {
-                middleText = text;
+                middleText = (T) text;
             }
         });
         pickerView3.setOnSelectorListener(new PickerView.OnSelectorListener() {
             @Override
             public void onSelector(String text) {
-                rightText = text;
+                rightText = (T) text;
             }
         });
-        leftList = new ArrayList<String>();
-        middleList = new ArrayList<String>();
-        rightList = new ArrayList<String>();
+        leftList = new ArrayList<>();
+        middleList = new ArrayList<>();
+        rightList = new ArrayList<>();
 
         this.setContentView(view);
         this.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
@@ -88,9 +97,26 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
         this.update();
     }
 
+    /**
+     * default show three
+     * @param num
+     */
+    public void setShowNum(int num){
+        switch (num){
+            case 1:
+                pickerView2.setVisibility(View.GONE);
+                pickerView3.setVisibility(View.GONE);
+                break;
+            case 2:
+                pickerView3.setVisibility(View.GONE);
+                break;
+            default:
+                break;
+        }
+    }
 
     /**
-     * 设置标题
+     * set title
      * @param text String
      */
     public void setPickerTitle(String text) {
@@ -98,11 +124,12 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
     }
 
     /**
-     * 填充数据
+     * Fill in the data
      * @param dataList List
-     * @param i 其中 1代表左边的picker 2代表中间的picker 3代表右边的picker
+     * @param i Select the picker
+     *          1-first  2-second  3-third
      */
-    public void setData(List<String> dataList, int i) {
+    public void setData(List<T> dataList, int i) {
         switch (i) {
             case 1:
                 leftList = dataList;
@@ -120,9 +147,11 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
     }
 
     /**
-     * 设置其中文本
-     * @param position 在数据中的位置
-     * @param i 其中 1代表左边的picker 2代表中间的picker 3代表右边的picker
+     * set the default centered text,
+     * if not set,show centered in the data
+     * @param position position in the data
+     * @param i  Select the picker
+     *          1-first  2-second  3-third
      */
     public void setMiddleText(int position, int i) {
         switch (i) {
@@ -142,12 +171,13 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
     }
 
     /**
-     * 获取选择文本
-     * @param i 其中 1代表左边的picker 2代表中间的picker 3代表右边的picker
+     * Access to select text
+     * @param i Select the picker
+     *          1-first  2-second  3-third
      * @return String
      */
-    public String getText(int i) {
-        String text = null;
+    public T getText(int i) {
+        T text = null;
         switch (i) {
             case 1:
                 text = leftText;
@@ -163,7 +193,7 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
     }
 
     /**
-     * 准备就绪
+     * redy
      */
     public void setPrepare() {
         if (selectedPosition1 != -1) {
@@ -186,12 +216,22 @@ public class TextPicker extends PopupWindow implements View.OnClickListener {
 
     }
 
-    public Button getOK() {
-        return OK;
-    }
-
     @Override
     public void onClick(View v) {
-        this.dismiss();
+        int i = v.getId();
+        if (i == R.id.back) {
+            this.dismiss();
+        }else {
+            if (mListener != null)
+            mListener.onFinish();
+        }
+    }
+
+    public void setSelectedFinishListener(SelectedFinishListener listener){
+        mListener = listener;
+    }
+
+    public interface SelectedFinishListener {
+        void onFinish();
     }
 }

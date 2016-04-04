@@ -62,21 +62,21 @@
             android:gravity="center"
             android:orientation="horizontal">
 
-            <com.idisfkj.picker.view.PickerView
+            <com.idisfkj.mypicker.PickerView
                 android:id="@+id/picker_view1"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/picker_bg" />
 
-            <com.idisfkj.picker.view.PickerView
+            <com.idisfkj.mypicker.PickerView
                 android:id="@+id/picker_view2"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="1"
                 android:background="@drawable/picker_bg" />
 
-            <com.idisfkj.picker.view.PickerView
+            <com.idisfkj.mypicker.PickerView
                 android:id="@+id/picker_view3"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
